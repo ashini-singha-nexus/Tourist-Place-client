@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgIf } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -8,10 +9,11 @@ import { Auth } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, RouterLink],
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, RouterLink, NgIf],
   template: `
     <form [formGroup]="form" (ngSubmit)="onSubmit()" style="max-width:420px;margin:48px auto;display:block;">
       <h2>Login</h2>
+      <div *ngIf="errorMessage" style="color: red; margin-bottom: 12px;">{{ errorMessage }}</div>
       <mat-form-field appearance="outline" style="width:100%;margin-top:12px;">
         <mat-label>Username</mat-label>
         <input matInput formControlName="username" required />
@@ -32,6 +34,7 @@ export class Login {
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
   loading = false;
+  errorMessage: string | null = null;
   form = new FormGroup({
     username: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     password: new FormControl('', { nonNullable: true, validators: [Validators.required] })
@@ -40,14 +43,16 @@ export class Login {
   onSubmit(): void {
     if (this.form.invalid) return;
     this.loading = true;
+    this.errorMessage = null;
     const { username, password } = this.form.getRawValue();
     this.auth.login({ username, password }).subscribe({
       next: (result) => {
         this.loading = false;
         this.router.navigate(['/places']);
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
+        this.errorMessage = err.error.detail || 'An unknown error occurred.';
       }
     });
   }

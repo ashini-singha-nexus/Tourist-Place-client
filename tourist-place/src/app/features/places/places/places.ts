@@ -1,6 +1,6 @@
 import { Component, Inject, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf, SlicePipe } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,7 +14,7 @@ import { Auth } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-places',
-  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatToolbarModule, MatIconModule, MatMenuModule, MatDialogModule, NgFor, NgIf, MatSlideToggleModule],
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatToolbarModule, MatIconModule, MatMenuModule, MatDialogModule, NgFor, NgIf, MatSlideToggleModule, SlicePipe],
   template: `
     <mat-toolbar color="primary">
       <span>Tourist Places</span>
@@ -47,13 +47,21 @@ import { Auth } from '../../../core/services/auth';
              [style.background-color]="isOwner(p) ? '#f1f8e9' : 'white'"
              style="border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-            <div style="flex:1;">
+            <div style="flex:1; min-width: 0;">
               <h3 style="margin:0 0 8px 0;color:#333;font-size:1.25rem;">{{ p.title }}</h3>
               <div style="display:flex;align-items:center;margin-bottom:8px;color:#666;">
                 <mat-icon style="font-size:16px;margin-right:4px;">location_on</mat-icon>
                 <small style="font-size:0.9rem;">{{ p.location }}</small>
               </div>
-              <p style="margin:0;color:#555;line-height:1.5;font-size:0.95rem;">{{ p.description }}</p>
+             <p style="margin:0;color:#555;line-height:1.5;font-size:0.95rem;overflow-wrap: break-word;">
+                <span *ngIf="p.description.length <= 50">{{ p.description }}</span>
+                <span *ngIf="p.description.length > 50">
+                  {{ isDescriptionExpanded(p.id) ? p.description : (p.description | slice:0:50) + '...' }}
+                  <button mat-button (click)="toggleDescription(p.id)">
+                    {{ isDescriptionExpanded(p.id) ? 'Read less' : 'Read more' }}
+                  </button>
+                </span>
+              </p>
             </div>
             <div *ngIf="isOwner(p)" style="margin-left:16px;">
               <button mat-button color="primary" (click)="openEditDialog(p)" style="margin-right:8px;">
@@ -81,6 +89,7 @@ export class Places {
   showOnlyMyPlaces = false;
   username: string | null = null;
   currentUserId: string | null = null;
+  descriptionExpanded: { [key: string]: boolean } = {};
 
   form = new FormGroup({
     title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] }),
@@ -122,6 +131,14 @@ export class Places {
 
   isOwner(place: any): boolean {
     return this.currentUserId && place.owner_id && this.currentUserId === place.owner_id;
+  }
+
+  toggleDescription(placeId: string): void {
+    this.descriptionExpanded[placeId] = !this.descriptionExpanded[placeId];
+  }
+
+  isDescriptionExpanded(placeId: string): boolean {
+    return this.descriptionExpanded[placeId] === true;
   }
 
   edit(p: any): void {
