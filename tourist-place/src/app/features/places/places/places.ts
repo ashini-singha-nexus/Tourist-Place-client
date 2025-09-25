@@ -36,18 +36,29 @@ import { Auth } from '../../../core/services/auth';
       </div>
 
       <div *ngIf="places?.length">
-        <div *ngFor="let p of places" style="border:1px solid #ddd;border-radius:8px;padding:12px;margin-bottom:12px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <h3 style="margin:0;">{{ p.title }}</h3>
-              <small>{{ p.location }}</small>
+        <div *ngFor="let p of places" 
+             [style.background-color]="isOwner(p) ? '#f1f8e9' : 'white'"
+             style="border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div style="flex:1;">
+              <h3 style="margin:0 0 8px 0;color:#333;font-size:1.25rem;">{{ p.title }}</h3>
+              <div style="display:flex;align-items:center;margin-bottom:8px;color:#666;">
+                <mat-icon style="font-size:16px;margin-right:4px;">location_on</mat-icon>
+                <small style="font-size:0.9rem;">{{ p.location }}</small>
+              </div>
+              <p style="margin:0;color:#555;line-height:1.5;font-size:0.95rem;">{{ p.description }}</p>
             </div>
-            <div>
-              <button mat-button color="primary" (click)="openEditDialog(p)">Edit</button>
-              <button mat-button color="warn" (click)="confirmDelete(p)">Delete</button>
+            <div *ngIf="isOwner(p)" style="margin-left:16px;">
+              <button mat-button color="primary" (click)="openEditDialog(p)" style="margin-right:8px;">
+                <mat-icon>edit</mat-icon>
+                Edit
+              </button>
+              <button mat-button color="warn" (click)="confirmDelete(p)">
+                <mat-icon>delete</mat-icon>
+                Delete
+              </button>
             </div>
           </div>
-          <p style="margin-top:8px;">{{ p.description }}</p>
         </div>
       </div>
     </div>
@@ -60,6 +71,7 @@ export class Places {
   private readonly dialog = inject(MatDialog);
   places: any[] = [];
   username: string | null = null;
+  currentUserId: string | null = null;
 
   form = new FormGroup({
     title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] }),
@@ -69,6 +81,7 @@ export class Places {
 
   ngOnInit(): void {
     this.username = this.auth.getUsername();
+    this.currentUserId = this.auth.getUserId();
     this.refresh();
   }
 
@@ -78,6 +91,10 @@ export class Places {
         this.places = items as any[];
       }
     });
+  }
+
+  isOwner(place: any): boolean {
+    return this.currentUserId && place.owner_id && this.currentUserId === place.owner_id;
   }
 
   edit(p: any): void {
@@ -98,6 +115,9 @@ export class Places {
   }
 
   openEditDialog(p: any): void {
+    if (!this.isOwner(p)) {
+      return; // Prevent editing if not owner
+    }
     const dialogRef = this.dialog.open(PlaceDialog, { data: { mode: 'edit', place: p } });
     dialogRef.afterClosed().subscribe((payload) => {
       if (!payload) return;
@@ -106,6 +126,9 @@ export class Places {
   }
 
   confirmDelete(p: any): void {
+    if (!this.isOwner(p)) {
+      return; // Prevent deletion if not owner
+    }
     const dialogRef = this.dialog.open(DeleteConfirmDialog, { data: { title: p.title } });
     dialogRef.afterClosed().subscribe((confirm) => {
       if (!confirm) return;

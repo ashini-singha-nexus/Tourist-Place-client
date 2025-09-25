@@ -42,7 +42,7 @@ export class Login {
     this.loading = true;
     const { username, password } = this.form.getRawValue();
     this.auth.login({ username, password }).subscribe({
-      next: () => {
+      next: (result) => {
         this.loading = false;
         this.router.navigate(['/places']);
       },

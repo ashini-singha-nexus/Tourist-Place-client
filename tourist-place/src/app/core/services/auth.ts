@@ -13,22 +13,24 @@ export class Auth {
 
   private readonly tokenKey = 'access_token';
   private readonly usernameKey = 'username';
+  private readonly userIdKey = 'user_id';
 
   register(payload: { username: string; email: string; password: string }): Observable<{ id: string; username: string; email: string }> {
     return this.http.post<{ id: string; username: string; email: string }>(`${this.apiBase}/auth/register`, payload);
   }
 
-  login(payload: { username: string; password: string }): Observable<string> {
+  login(payload: { username: string; password: string }): Observable<{ access_token: string; user_id: string }> {
     const body = new HttpParams().set('username', payload.username).set('password', payload.password);
     return this.http
-      .post<{ access_token: string; token_type: string }>(`${this.apiBase}/auth/login`, body, {
+      .post<{ access_token: string; token_type: string; user_id: string }>(`${this.apiBase}/auth/login`, body, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       })
       .pipe(
-        map((res) => res.access_token),
-        tap((token) => {
-          localStorage.setItem(this.tokenKey, token);
+        map((res) => ({ access_token: res.access_token, user_id: res.user_id })),
+        tap((result) => {
+          localStorage.setItem(this.tokenKey, result.access_token);
           localStorage.setItem(this.usernameKey, payload.username);
+          localStorage.setItem(this.userIdKey, result.user_id);
         })
       );
   }
@@ -36,6 +38,7 @@ export class Auth {
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.usernameKey);
+    localStorage.removeItem(this.userIdKey);
   }
 
   getToken(): string | null {
@@ -48,5 +51,9 @@ export class Auth {
 
   getUsername(): string | null {
     return localStorage.getItem(this.usernameKey);
+  }
+
+  getUserId(): string | null {
+    return localStorage.getItem(this.userIdKey);
   }
 }
