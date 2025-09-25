@@ -1,59 +1,62 @@
-# TouristPlace
+# Tourist Place Client
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.3.
+This is an Angular application for managing tourist places. It allows users to perform CRUD (Create, Read, Update, Delete) operations for tourist places after logging in.
 
-## Development server
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli).
 
-To start a local development server, run:
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (which includes npm) installed on your machine.
+- An instance of the corresponding backend server running. The API endpoint details can be found in the `endpoints-details.md` file in the parent directory.
+
+### Installation
+
+1. Clone the repository to your local machine.
+2. Navigate to the `tourist-place` directory.
+3. Install the required packages using npm:
+
+   ```bash
+   npm install
+   ```
+
+## Running the application
+
+To start the development server, you can use either of the following commands:
+
+```bash
+npm start
+```
+
+or
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
-## Code scaffolding
+## Building the project
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+To build the project for production, run:
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+The build artifacts will be stored in the `dist/` directory.
 
 ## Running unit tests
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+To execute the unit tests via [Karma](https://karma-runner.github.io), run:
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
+## API Endpoints
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+This application requires a running backend to function correctly. The API endpoints and their specifications are detailed in the `endpoints-details.md` file located in the root of the parent `Tourist-Place-client` directory. Please ensure the backend server is running and accessible before starting this client application.
