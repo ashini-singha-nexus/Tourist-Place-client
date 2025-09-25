@@ -177,15 +177,15 @@ export class Places {
     <form [formGroup]="form" (ngSubmit)="submit()" style="display:block;padding:0 24px 24px;">
       <mat-form-field appearance="outline" style="width:100%;margin-top:12px;">
         <mat-label>Title</mat-label>
-        <input matInput formControlName="title" />
+        <input matInput formControlName="title" maxlength="50" />
       </mat-form-field>
       <mat-form-field appearance="outline" style="width:100%;margin-top:12px;">
         <mat-label>Location</mat-label>
-        <input matInput formControlName="location" />
+        <input matInput formControlName="location" maxlength="100" />
       </mat-form-field>
       <mat-form-field appearance="outline" style="width:100%;margin-top:12px;">
         <mat-label>Description</mat-label>
-        <textarea matInput rows="3" formControlName="description"></textarea>
+        <textarea matInput rows="3" formControlName="description" maxlength="500"></textarea>
       </mat-form-field>
       <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">
         <button mat-button mat-dialog-close>Cancel</button>
@@ -199,9 +199,9 @@ export class Places {
 })
 export class PlaceDialog {
   form = new FormGroup({
-    title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] }),
-    description: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(10)] }),
-    location: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] })
+    title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3), Validators.maxLength(50)] }),
+    description: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(10), Validators.maxLength(500)] }),
+    location: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3), Validators.maxLength(100)] })
   });
   constructor(@Inject(MAT_DIALOG_DATA) public data: any, private dialogRef: MatDialogRef<PlaceDialog>) {
     if (data?.place) {
