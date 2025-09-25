@@ -7,13 +7,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { PlacesService } from '../places.service';
 import { Auth } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-places',
-  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatToolbarModule, MatIconModule, MatMenuModule, MatDialogModule, NgFor, NgIf],
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatToolbarModule, MatIconModule, MatMenuModule, MatDialogModule, NgFor, NgIf, MatSlideToggleModule],
   template: `
     <mat-toolbar color="primary">
       <span>Tourist Places</span>
@@ -28,7 +29,13 @@ import { Auth } from '../../../core/services/auth';
     </mat-toolbar>
 
     <div style="max-width:900px;margin:24px auto;">
-      <div style="text-align:right;margin-bottom:12px;">
+      <div style="text-align:right;margin-bottom:12px; display: flex; justify-content: flex-end; align-items: center;">
+        <mat-slide-toggle
+          [checked]="showOnlyMyPlaces"
+          (change)="togglePlacesFilter()"
+          style="margin-right: 16px;">
+          Show My Places Only
+        </mat-slide-toggle>
         <button mat-raised-button color="primary" (click)="openCreateDialog()">
           <mat-icon>add</mat-icon>
           Create Place
@@ -70,6 +77,8 @@ export class Places {
   private readonly auth = inject(Auth);
   private readonly dialog = inject(MatDialog);
   places: any[] = [];
+  allPlaces: any[] = [];
+  showOnlyMyPlaces = false;
   username: string | null = null;
   currentUserId: string | null = null;
 
@@ -82,15 +91,33 @@ export class Places {
   ngOnInit(): void {
     this.username = this.auth.getUsername();
     this.currentUserId = this.auth.getUserId();
-    this.refresh();
+    this.loadPlaces();
+  }
+
+  loadPlaces(): void {
+    this.api.list().subscribe({
+      next: (items: any[]) => {
+        this.allPlaces = items as any[];
+        this.filterPlaces();
+      }
+    });
+  }
+
+  filterPlaces(): void {
+    if (this.showOnlyMyPlaces) {
+      this.places = this.allPlaces.filter(p => this.isOwner(p));
+    } else {
+      this.places = this.allPlaces;
+    }
+  }
+
+  togglePlacesFilter(): void {
+    this.showOnlyMyPlaces = !this.showOnlyMyPlaces;
+    this.filterPlaces();
   }
 
   refresh(): void {
-    this.api.list().subscribe({
-      next: (items: any[]) => {
-        this.places = items as any[];
-      }
-    });
+    this.loadPlaces();
   }
 
   isOwner(place: any): boolean {
