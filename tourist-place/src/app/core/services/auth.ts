@@ -12,6 +12,7 @@ export class Auth {
   private readonly apiBase = environment.apiBase;
 
   private readonly tokenKey = 'access_token';
+  private readonly usernameKey = 'username';
 
   register(payload: { username: string; email: string; password: string }): Observable<{ id: string; username: string; email: string }> {
     return this.http.post<{ id: string; username: string; email: string }>(`${this.apiBase}/auth/register`, payload);
@@ -25,12 +26,16 @@ export class Auth {
       })
       .pipe(
         map((res) => res.access_token),
-        tap((token) => localStorage.setItem(this.tokenKey, token))
+        tap((token) => {
+          localStorage.setItem(this.tokenKey, token);
+          localStorage.setItem(this.usernameKey, payload.username);
+        })
       );
   }
 
   logout(): void {
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.usernameKey);
   }
 
   getToken(): string | null {
@@ -39,5 +44,9 @@ export class Auth {
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  getUsername(): string | null {
+    return localStorage.getItem(this.usernameKey);
   }
 }
