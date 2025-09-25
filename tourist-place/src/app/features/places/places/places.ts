@@ -8,13 +8,16 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { PlacesService } from '../places.service';
 import { Auth } from '../../../core/services/auth';
 
+import { PageEvent } from '@angular/material/paginator';
+
 @Component({
   selector: 'app-places',
-  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatToolbarModule, MatIconModule, MatMenuModule, MatDialogModule, NgFor, NgIf, MatSlideToggleModule, SlicePipe],
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatToolbarModule, MatIconModule, MatMenuModule, MatDialogModule, NgFor, NgIf, MatSlideToggleModule, SlicePipe, MatPaginatorModule],
   template: `
     <mat-toolbar color="primary">
       <span>Tourist Places</span>
@@ -43,7 +46,7 @@ import { Auth } from '../../../core/services/auth';
       </div>
 
       <div *ngIf="places?.length">
-        <div *ngFor="let p of places" 
+        <div *ngFor="let p of places.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize)" 
              [style.background-color]="isOwner(p) ? '#f1f8e9' : 'white'"
              style="border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -75,6 +78,11 @@ import { Auth } from '../../../core/services/auth';
             </div>
           </div>
         </div>
+        <mat-paginator [length]="places.length"
+                       [pageSize]="pageSize"
+                       [pageSizeOptions]="[5, 10, 25, 100]"
+                       (page)="onPageChange($event)">
+        </mat-paginator>
       </div>
     </div>
   `,
@@ -90,6 +98,8 @@ export class Places {
   username: string | null = null;
   currentUserId: string | null = null;
   descriptionExpanded: { [key: string]: boolean } = {};
+  pageSize = 10;
+  pageIndex = 0;
 
   form = new FormGroup({
     title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] }),
@@ -118,11 +128,17 @@ export class Places {
     } else {
       this.places = this.allPlaces;
     }
+    this.pageIndex = 0;
   }
 
   togglePlacesFilter(): void {
     this.showOnlyMyPlaces = !this.showOnlyMyPlaces;
     this.filterPlaces();
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
   }
 
   refresh(): void {
